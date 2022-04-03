@@ -1,2 +1,0 @@
-FLASK_ENV=development
-FLASK_APP=flourish_app
