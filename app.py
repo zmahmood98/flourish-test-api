@@ -9,10 +9,10 @@ from werkzeug import exceptions
 app = Flask(__name__)
 CORS(app)
 
-app.config.from_object(os.environ['APP_SETTINGS'])
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 db = SQLAlchemy(app)
+
+# app.config.from_object(os.environ['APP_SETTINGS'])
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 migrate = Migrate(app, db)
 
@@ -68,4 +68,4 @@ def getProductById(product_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
