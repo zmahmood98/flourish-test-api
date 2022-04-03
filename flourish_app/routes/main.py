@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify
+from flask import Blueprint, request, jsonify
 
 from flourish_app.extensions import db
 from flourish_app.models import Products
