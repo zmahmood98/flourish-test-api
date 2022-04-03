@@ -1,27 +1,22 @@
-import os
-from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify
+
+from flourish_app.extensions import db
+from flourish_app.models import Products
+
 from flask_cors import CORS
-from flask_migrate import Migrate
 from werkzeug import exceptions
 
+main = Blueprint('main', __name__) 
+# same as Flask __name
 
-app = Flask(__name__)
-CORS(app)
+CORS(main)
 
-#app.config.from_object(os.environ['APP_SETTINGS'])
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
-#migrate = Migrate(app, db)
-
-from models import Users, Products, Category
-
-@app.route("/")
+@main.route("/")
 def hello():
     return "Hello World!"
 
-@app.route('/products', methods=['GET','POST'])
+
+@main.route('/products', methods=['GET','POST'])
 def gatAllProducts():
     if request.method == 'GET':
         try: 
@@ -54,7 +49,7 @@ def gatAllProducts():
         except: 
             raise exceptions.InternalServerError()
 
-@app.get('/products/<int:product_id>')
+@main.get('/products/<int:product_id>')
 def getProductById(product_id):
     try: 
         product = Products.query.get_or_404(product_id)
@@ -63,8 +58,3 @@ def getProductById(product_id):
         raise exceptions.NotFound("Product not found!")
     except:
         raise exceptions.InternalServerError()
-
-
-
-if __name__ == '__main__':
-    app.run()

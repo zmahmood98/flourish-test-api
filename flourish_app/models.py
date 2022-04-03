@@ -1,7 +1,6 @@
-from app import db
+from .extensions import db 
 
 class Users(db.Model):
-    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64))
     email = db.Column(db.String(100))
@@ -37,7 +36,6 @@ class Users(db.Model):
 
 
 class Products(db.Model):
-    __tablename__ = 'products'
     product_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     category_id = db.Column(db.Integer, db.ForeignKey('category.category_id'))
@@ -76,7 +74,6 @@ class Products(db.Model):
 
 
 class Category(db.Model):
-    __tablename__ = 'category'
     category_id = db.Column(db.Integer, primary_key=True)
     category_name  = db.Column(db.String(100))
 
