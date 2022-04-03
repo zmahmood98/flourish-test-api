@@ -13,6 +13,6 @@ def create_app(config_file='settings.py'):
 
     app.register_blueprint(main)
 
-    app.cli.add_command(create_tables)
+    # app.cli.add_command(create_tables)
 
     return app
