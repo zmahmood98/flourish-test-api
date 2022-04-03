@@ -24,13 +24,13 @@ def hello():
 @app.route('/products', methods=['GET','POST'])
 def gatAllProducts():
     if request.method == 'GET':
-        try: 
+        # try: 
             allProducts = Products.query.all()
             return  jsonify([e.serialize() for e in allProducts])
-        except exceptions.NotFound:
-            raise exceptions.NotFound("There are no products to view at the moment!")
-        except:
-            raise exceptions.InternalServerError()
+        # except exceptions.NotFound:
+        #     raise exceptions.NotFound("There are no products to view at the moment!")
+        # except:
+        #     raise exceptions.InternalServerError()
 
     elif request.method == 'POST':
     # format of request { description, category_id, is_retail, location, price, expiry, image} 
