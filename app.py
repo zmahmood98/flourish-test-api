@@ -9,14 +9,8 @@ from werkzeug import exceptions
 app = Flask(__name__)
 CORS(app)
 
-## old code
-# app.config.from_object(os.environ['APP_SETTINGS'])
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-
-##new code
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://uuzqsoalmnntbu:6f71ab40c756d8d64fbacd0b31310987300736c8c870fdf2fce030c13c6bbbff@ec2-52-21-136-176.compute-1.amazonaws.com:5432/dcluu7m1qdro74'
-app.config['SECRET_KEY'] = "my super secret key that no one is supposed to know"
+app.config.from_object(os.environ['APP_SETTINGS'])
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
