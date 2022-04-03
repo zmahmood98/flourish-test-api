@@ -15,7 +15,7 @@ db = SQLAlchemy(app)
 
 # migrate = Migrate(app, db)
 
-from models import Users, Products, Categories
+from models import Users, Products, Category
 
 @app.route("/")
 def hello():
