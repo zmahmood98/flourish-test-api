@@ -2,7 +2,7 @@ import os
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-# from flask_migrate import Migrate
+from flask_migrate import Migrate
 from werkzeug import exceptions
 
 app = Flask(__name__)
