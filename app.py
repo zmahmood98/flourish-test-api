@@ -5,6 +5,7 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from werkzeug import exceptions
 
+
 app = Flask(__name__)
 CORS(app)
 
