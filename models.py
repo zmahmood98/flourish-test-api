@@ -5,16 +5,16 @@ class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64))
     email = db.Column(db.String(100))
-    password = db.Column(db.String(25))
+    passwrd = db.Column(db.String(25))
     rating = db.Column(db.Float)
     rating_num = db.Column(db.Integer)
     location = db.Column(db.String(7))
     radius = db.Column(db.Float)
 
-    def __init__(self, username, email, password, rating, rating_num, location, radius):
+    def __init__(self, username, email, passwrd, rating, rating_num, location, radius):
         self.username = username
         self.email = email
-        self.password = password
+        self.passwrd = passwrd
         self.rating = rating
         self.rating_num = rating_num
         self.location = location
@@ -28,7 +28,7 @@ class Users(db.Model):
             'id': self.id,
             'username': self.username, 
             'email': self.email,
-            'password': self.password,
+            'passwrd': self.passwrd,
             'rating': self.rating,
             'rating_num': self.rating_num,
             'location': self.location,
