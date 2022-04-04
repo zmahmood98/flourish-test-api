@@ -4,7 +4,7 @@ class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64))
     email = db.Column(db.String(100))
-    passwrd = db.Column(db.String(100))
+    passwrd = db.Column(db.String(10000))
     rating = db.Column(db.Float)
     rating_num = db.Column(db.Integer)
     location = db.Column(db.String(7))
