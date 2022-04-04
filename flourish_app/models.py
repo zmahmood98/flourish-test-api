@@ -1,6 +1,7 @@
+from flask_login import UserMixin, LoginManager, login_required, login_user, logout_user, current_user
 from .extensions import db 
 
-class Users(db.Model):
+class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64))
     email = db.Column(db.String(100))

@@ -7,7 +7,6 @@ from flask_bcrypt import Bcrypt
 
 from flourish_app.extensions import db
 from flourish_app.models import Products, Users, Category
-from flourish_app.AuthModels import RegisterForm, LoginForm
 
 
 main = Blueprint('main', __name__) 
@@ -15,7 +14,7 @@ CORS(main)
 
 
 # bcrypt = Bcrypt(main)
-login_manager = LoginManager()
+login_manager = LoginManager(main)
 login_manager.init_app(main)
 login_manager.login_view = "login" #our app and flask login to work together
 
@@ -27,21 +26,20 @@ def hello():
 def load_user(user_id):
     return Users.query.get(int(user_id))
 
-# @main.route("/login", methods = ['POST', "GET"])
-# def login():
-#     form = LoginForm()
-#     if form.validate_on_submit():
-#         user = Users.query.filter_by(username = form.username.data).first()
-#         if user:
-#             if bcrypt.check_password_hash(user.password, form.password.data):
-#                 login_user(user)
-                
-
+#working
+@main.route("/login", methods = ['POST', "GET"])
+def login():
+    req = request.get_json()
+    user = Users.query.filter_by(email = req['email']).first()
+    if user:
+        if check_password_hash(user.passwrd, req['passwrd']):
+            login_user(user)
+        return f"Login sucessful!", 200
+            
+#working
 @main.route("/register", methods = ['POST', "GET"])
 def register():
-    form = RegisterForm()
     req = request.get_json()
-    # if req.validate_on_submit():
     hashed_password = generate_password_hash(req['passwrd'])
     new_user =  Users(
         username = req['username'], 
@@ -56,13 +54,14 @@ def register():
     db.session.commit()
     return f"New user was added!", 201
         
-
+# needs fixing
 @main.route('/logout', methods = ["GET", "POST"])
 @login_required
 def logout():
     logout_user  
+    return f"Logged out sucessfully!", 201
 
-
+#working
 @main.route('/products', methods=['GET','POST'])
 def getAllProducts():
     if request.method == 'GET':
@@ -96,6 +95,7 @@ def getAllProducts():
         except: 
             raise exceptions.InternalServerError()
 
+#working
 @main.get('/products/<int:product_id>')
 def getProductById(product_id):
     try: 
@@ -105,3 +105,4 @@ def getProductById(product_id):
         raise exceptions.NotFound("Product not found!")
     except:
         raise exceptions.InternalServerError()
+
