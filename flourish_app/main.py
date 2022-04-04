@@ -1,3 +1,4 @@
+from operator import countOf
 from flask import Blueprint, request, jsonify
 from flask_login import UserMixin, LoginManager, login_required, login_user, logout_user, current_user
 from flask_cors import CORS
@@ -6,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_bcrypt import Bcrypt
 
 from flourish_app.extensions import db
-from flourish_app.models import Products, Users, Category
+from flourish_app.models import Productratings, Products, Users, Category
 
 
 main = Blueprint('main', __name__) 
@@ -106,17 +107,18 @@ def getProductById(product_id):
     except:
         raise exceptions.InternalServerError()
 
-@main.route('/users', methods=['GET','POST'])
+#working
+@main.get('/users')
 def getAllUsers():
-    if request.method == 'GET':
-        try: 
-            allUsers = Users.query.all()
-            return  jsonify([e.serialize() for e in allUsers])
-        except exceptions.NotFound:
-            raise exceptions.NotFound("There are no users to view at the moment!")
-        except:
-            raise exceptions.InternalServerError()
+    try: 
+        allUsers = Users.query.all()
+        return  jsonify([e.serialize() for e in allUsers])
+    except exceptions.NotFound:
+        raise exceptions.NotFound("There are no users to view at the moment!")
+    except:
+        raise exceptions.InternalServerError()
 
+#working
 @main.route('/users/<int:user_id>', methods=['GET', 'DELETE'])
 def handleUserById(user_id):
     if request.method == 'GET':
@@ -127,7 +129,7 @@ def handleUserById(user_id):
             raise exceptions.NotFound("User not found!")
         except:
             raise exceptions.InternalServerError()
-    if request.method == 'DELETE':
+    elif request.method == 'DELETE':
         try: 
             user = Users.query.get_or_404(user_id)
             Users.remove(user)
@@ -137,3 +139,103 @@ def handleUserById(user_id):
         except:
             raise exceptions.InternalServerError()
 
+
+@main.route('/rating/upvote', methods= ['POST'])
+def upvote():
+    if request.method == 'POST':
+        try:
+            req = request.get_json()
+            new_product_rating = Productratings(
+                product_id = req['product_id'], 
+                user_id = req['user_id'], 
+                rating = 1
+            )
+            print(new_product_rating)
+            db.session.add(new_product_rating)
+            db.session.commit()
+
+            #get the user that they are rating
+            product_they_are_rating = Products.query.get_or_404(req['product_id']).serialize()
+            
+            id_of_user_they_are_rating = product_they_are_rating['user_id']
+
+            #calculate the rating
+            #count of all productRatings that have the user id
+            all_users_ratings = db.session.query(Productratings).filter(Productratings.user_id == id_of_user_they_are_rating)
+            
+            all_users_ratings_array = []
+            for row in all_users_ratings:
+                all_users_ratings_array.append(row.serialize())
+
+            count = db.session.query(Productratings).filter(Productratings.user_id == id_of_user_they_are_rating).count()
+            #for the total of these productRatings add up all the rating keys / count * 100
+
+            rating_count = 0
+            for i in range(0, len(all_users_ratings_array)):
+                rating_count = rating_count + all_users_ratings_array[i]['rating']
+
+            updated_rating = (rating_count/count)*100
+
+            db.session.query(Users).filter(Users.id == id_of_user_they_are_rating).update({Users.rating: updated_rating})
+            db.session.commit()
+            return f"Rating was posted!", 201
+
+        except: 
+            raise exceptions.InternalServerError()
+    
+
+@main.route('/rating/downvote', methods= ['POST'])
+def downvote():
+    if request.method == 'POST':
+        try:
+            req = request.get_json()
+            new_product_rating = Productratings(
+                product_id = req['product_id'], 
+                user_id = req['user_id'], 
+                rating = 0
+            )
+            print(new_product_rating)
+            db.session.add(new_product_rating)
+            db.session.commit()
+
+            #get the user that they are rating
+            product_they_are_rating = Products.query.get_or_404(req['product_id']).serialize()
+            
+            id_of_user_they_are_rating = product_they_are_rating['user_id']
+
+            #calculate the rating
+            #count of all productRatings that have the user id
+            all_users_ratings = db.session.query(Productratings).filter(Productratings.user_id == id_of_user_they_are_rating)
+            
+            all_users_ratings_array = []
+            for row in all_users_ratings:
+                all_users_ratings_array.append(row.serialize())
+
+            count = db.session.query(Productratings).filter(Productratings.user_id == id_of_user_they_are_rating).count()
+            #for the total of these productRatings add up all the rating keys / count * 100
+
+            rating_count = 0
+            for i in range(0, len(all_users_ratings_array)):
+                rating_count = rating_count + all_users_ratings_array[i]['rating']
+
+            updated_rating = (rating_count/count)*100
+
+            db.session.query(Users).filter(Users.id == id_of_user_they_are_rating).update({Users.rating: updated_rating})
+            db.session.commit()
+            return f"Rating was posted!", 201
+        
+        except: 
+            raise exceptions.InternalServerError()
+    
+
+@main.route('/ratings',  methods=['GET'])
+def getAllRatings():
+    if request.method == 'GET':
+        try: 
+            print("hello world")
+            allProductRatings = Productratings.query.all()
+            return jsonify([e.serialize() for e in allProductRatings])
+        except exceptions.NotFound:
+            raise exceptions.NotFound("Product ratings not found!")
+        except:
+            raise exceptions.InternalServerError()

@@ -33,7 +33,7 @@ class Users(db.Model, UserMixin):
             'rating_num': self.rating_num,
             'location': self.location,
             'radius': self.radius
-    }
+        }
 
 class Products(db.Model):
     product_id = db.Column(db.Integer, primary_key=True)
@@ -70,11 +70,12 @@ class Products(db.Model):
             'expiry': self.expiry,
             'description': self.description,
             'image': self.image
-    }
+        }
 
-class ProductRatings(db.Model):
+class Productratings(db.Model):
     product_rating_id = db.Column(db.Integer, primary_key=True)
-    product_id = db.Column(db.Integer, db.ForeignKey('products.id'))
+    product_id = db.Column(db.Integer, db.ForeignKey('products.product_id'))
+    # user id of the person rating the product
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     rating = db.Column(db.Integer)
 
@@ -84,7 +85,7 @@ class ProductRatings(db.Model):
         self.rating = rating
 
     def __repr__(self):
-        return '<id {}>'.format(self.product_id)
+        return '<id {}>'.format(self.product_rating_id)
     
     def serialize(self):
         return {
@@ -92,7 +93,7 @@ class ProductRatings(db.Model):
             'product_id': self.product_id,
             'user_id': self.user_id, 
             'rating': self.rating
-    }
+        }
 
 
 class Category(db.Model):
