@@ -17,7 +17,7 @@ def hello():
 
 
 @main.route('/products', methods=['GET','POST'])
-def gatAllProducts():
+def getAllProducts():
     if request.method == 'GET':
         try: 
             allProducts = Products.query.all()
