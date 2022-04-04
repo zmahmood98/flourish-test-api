@@ -119,6 +119,17 @@ def getAllUsers():
         raise exceptions.InternalServerError()
 
 #working
+@main.get('/users/<int:user_id>/products')
+def getAllUsersProductsById(user_id):
+    try: 
+        allUsersProducts = db.session.query(Products).filter(Products.user_id == user_id)
+        return  jsonify([e.serialize() for e in allUsersProducts])
+    except exceptions.NotFound:
+        raise exceptions.NotFound("There are no users to view at the moment!")
+    except:
+        raise exceptions.InternalServerError()
+
+#working
 @main.route('/users/<int:user_id>', methods=['GET', 'DELETE'])
 def handleUserById(user_id):
     if request.method == 'GET':
