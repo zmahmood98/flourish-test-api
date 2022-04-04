@@ -106,3 +106,34 @@ def getProductById(product_id):
     except:
         raise exceptions.InternalServerError()
 
+@main.route('/users', methods=['GET','POST'])
+def getAllUsers():
+    if request.method == 'GET':
+        try: 
+            allUsers = Users.query.all()
+            return  jsonify([e.serialize() for e in allUsers])
+        except exceptions.NotFound:
+            raise exceptions.NotFound("There are no users to view at the moment!")
+        except:
+            raise exceptions.InternalServerError()
+
+@main.route('/users/<int:user_id>', methods=['GET', 'DELETE'])
+def handleUserById(user_id):
+    if request.method == 'GET':
+        try: 
+            user = Users.query.get_or_404(user_id)
+            return  jsonify([user.serialize()])
+        except exceptions.NotFound:
+            raise exceptions.NotFound("User not found!")
+        except:
+            raise exceptions.InternalServerError()
+    if request.method == 'DELETE':
+        try: 
+            user = Users.query.get_or_404(user_id)
+            Users.remove(user)
+            return f"User was sucessfully deleted!", 204
+        except exceptions.NotFound:
+            raise exceptions.NotFound("User not found!")
+        except:
+            raise exceptions.InternalServerError()
+

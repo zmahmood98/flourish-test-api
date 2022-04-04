@@ -1,4 +1,4 @@
-from flask_login import UserMixin, LoginManager, login_required, login_user, logout_user, current_user
+from flask_login import UserMixin
 from .extensions import db 
 
 class Users(db.Model, UserMixin):
@@ -35,7 +35,6 @@ class Users(db.Model, UserMixin):
             'radius': self.radius
     }
 
-
 class Products(db.Model):
     product_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -71,6 +70,28 @@ class Products(db.Model):
             'expiry': self.expiry,
             'description': self.description,
             'image': self.image
+    }
+
+class ProductRatings(db.Model):
+    product_rating_id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    rating = db.Column(db.Integer)
+
+    def __init__(self, product_id, user_id, rating):
+        self.product_id = product_id
+        self.user_id = user_id
+        self.rating = rating
+
+    def __repr__(self):
+        return '<id {}>'.format(self.product_id)
+    
+    def serialize(self):
+        return {
+            'product_rating_id': self.product_rating_id,
+            'product_id': self.product_id,
+            'user_id': self.user_id, 
+            'rating': self.rating
     }
 
 
