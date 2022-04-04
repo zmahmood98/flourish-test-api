@@ -1,10 +1,8 @@
-from operator import countOf
 from flask import Blueprint, request, jsonify
-from flask_login import UserMixin, LoginManager, login_required, login_user, logout_user, current_user
+from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from flask_cors import CORS
 from werkzeug import exceptions
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_bcrypt import Bcrypt
 
 from flourish_app.extensions import db
 from flourish_app.models import Productratings, Products, Users, Category
@@ -102,6 +100,17 @@ def getProductById(product_id):
     try: 
         product = Products.query.get_or_404(product_id)
         return  jsonify([product.serialize()])
+    except exceptions.NotFound:
+        raise exceptions.NotFound("Product not found!")
+    except:
+        raise exceptions.InternalServerError()
+
+#working
+@main.get('/products/category/<int:category_id>')
+def getProductByCategoryId(category_id):
+    try: 
+        products = db.session.query(Products).filter(Products.category_id == category_id)
+        return jsonify([e.serialize() for e in products])
     except exceptions.NotFound:
         raise exceptions.NotFound("Product not found!")
     except:
@@ -248,5 +257,14 @@ def getAllRatings():
             return jsonify([e.serialize() for e in allProductRatings])
         except exceptions.NotFound:
             raise exceptions.NotFound("Product ratings not found!")
+        except:
+            raise exceptions.InternalServerError()
+
+
+@main.route('/users/<int:user_id>/radius',  methods=['PATCH'])
+def updateRadius():
+    if request.method == 'PATCH':
+        try: 
+            print("hello world")
         except:
             raise exceptions.InternalServerError()
