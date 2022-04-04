@@ -75,7 +75,7 @@ def getAllProducts():
     elif request.method == 'POST':
     # format of request 
     # { "user_id": 1, "description": "Tomatoes", "category_id": 2, "is_retail": "True", "location": "SE18", "price": 2.99, "expiry": "02/04/2022", "image": "LINK"}
-        try:
+        # try:
             req = request.get_json()
             new_product = Products(
                 user_id = req['user_id'],
@@ -91,8 +91,8 @@ def getAllProducts():
             db.session.commit()
             return f"New product was added!", 201
 
-        except: 
-            raise exceptions.InternalServerError()
+        # except: 
+        #     raise exceptions.InternalServerError()
 
 #working
 @main.get('/products/<int:product_id>')
@@ -159,20 +159,28 @@ def handleUserById(user_id):
         except:
             raise exceptions.InternalServerError()
 
-
-@main.route('/rating/upvote', methods= ['POST'])
+# needs to be fixed
+@main.route('/rating/vote', methods= ['POST'])
 def upvote():
     if request.method == 'POST':
-        try:
+        # try:
             req = request.get_json()
             new_product_rating = Productratings(
                 product_id = req['product_id'], 
                 user_id = req['user_id'], 
-                rating = 1
+                rating = req['rating']
             )
-            print(new_product_rating)
-            db.session.add(new_product_rating)
-            db.session.commit()
+
+            check_count = db.session.query(Productratings).filter(Productratings.user_id == req['user_id']).filter(Productratings.product_id == req['product_id']).count()
+
+            check = db.session.query(Productratings).filter(Productratings.user_id == req['user_id']).filter(Productratings.product_id == req['product_id'])
+            
+            if check_count == 0:
+                db.session.add(new_product_rating)
+                db.session.commit()
+            else:
+                check.update({Users.rating: req['rating']})
+                db.session.commit()
 
             #get the user that they are rating
             product_they_are_rating = Products.query.get_or_404(req['product_id']).serialize()
@@ -188,71 +196,32 @@ def upvote():
                 all_users_ratings_array.append(row.serialize())
 
             count = db.session.query(Productratings).filter(Productratings.user_id == id_of_user_they_are_rating).count()
+            print("count", count)
             #for the total of these productRatings add up all the rating keys / count * 100
 
-            rating_count = 0
-            for i in range(0, len(all_users_ratings_array)):
-                rating_count = rating_count + all_users_ratings_array[i]['rating']
+            def ratingCount():
+                rating_count = 0
+                for i in range(0, len(all_users_ratings_array)):
+                    rating_count = rating_count + all_users_ratings_array[i]['rating']
+                return rating_count
 
-            updated_rating = (rating_count/count)*100
+
+            updated_rating = (ratingCount()/count)
+            print("updated_rating", updated_rating)
 
             db.session.query(Users).filter(Users.id == id_of_user_they_are_rating).update({Users.rating: updated_rating})
             db.session.commit()
+            
             return f"Rating was posted!", 201
 
-        except: 
-            raise exceptions.InternalServerError()
+        # except: 
+        #     raise exceptions.InternalServerError()
     
-
-@main.route('/rating/downvote', methods= ['POST'])
-def downvote():
-    if request.method == 'POST':
-        try:
-            req = request.get_json()
-            new_product_rating = Productratings(
-                product_id = req['product_id'], 
-                user_id = req['user_id'], 
-                rating = 0
-            )
-            print(new_product_rating)
-            db.session.add(new_product_rating)
-            db.session.commit()
-
-            #get the user that they are rating
-            product_they_are_rating = Products.query.get_or_404(req['product_id']).serialize()
-            
-            id_of_user_they_are_rating = product_they_are_rating['user_id']
-
-            #calculate the rating
-            #count of all productRatings that have the user id
-            all_users_ratings = db.session.query(Productratings).filter(Productratings.user_id == id_of_user_they_are_rating)
-            
-            all_users_ratings_array = []
-            for row in all_users_ratings:
-                all_users_ratings_array.append(row.serialize())
-
-            count = db.session.query(Productratings).filter(Productratings.user_id == id_of_user_they_are_rating).count()
-            #for the total of these productRatings add up all the rating keys / count * 100
-
-            rating_count = 0
-            for i in range(0, len(all_users_ratings_array)):
-                rating_count = rating_count + all_users_ratings_array[i]['rating']
-
-            updated_rating = (rating_count/count)*100
-
-            db.session.query(Users).filter(Users.id == id_of_user_they_are_rating).update({Users.rating: updated_rating})
-            db.session.commit()
-            return f"Rating was posted!", 201
-        
-        except: 
-            raise exceptions.InternalServerError()
-    
-
+#working
 @main.route('/ratings',  methods=['GET'])
 def getAllRatings():
     if request.method == 'GET':
-        try: 
-            print("hello world")
+        try:
             allProductRatings = Productratings.query.all()
             return jsonify([e.serialize() for e in allProductRatings])
         except exceptions.NotFound:
@@ -260,11 +229,28 @@ def getAllRatings():
         except:
             raise exceptions.InternalServerError()
 
-
-@main.route('/users/<int:user_id>/radius',  methods=['PATCH'])
-def updateRadius():
+#working
+@main.route('/users/<int:user_id>/location',  methods=['PATCH'])
+def updateLocation(user_id):
     if request.method == 'PATCH':
         try: 
-            print("hello world")
+            req = request.get_json()
+            updated_location = req['updated_location']
+            db.session.query(Users).filter(Users.id == user_id).update({Users.location: updated_location})
+            db.session.commit()
+            return f"Location sucessfully updated!", 201
+        except:
+            raise exceptions.InternalServerError()
+
+#working
+@main.route('/users/<int:user_id>/radius',  methods=['PATCH'])
+def updateRadius(user_id):
+    if request.method == 'PATCH':
+        try: 
+            req = request.get_json()
+            updated_radius = req['updated_radius']
+            db.session.query(Users).filter(Users.id == user_id).update({Users.radius: updated_radius})
+            db.session.commit()
+            return f"Radius sucessfully updated!", 201
         except:
             raise exceptions.InternalServerError()
