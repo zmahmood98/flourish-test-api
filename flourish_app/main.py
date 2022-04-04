@@ -1,19 +1,66 @@
 from flask import Blueprint, request, jsonify
-
-from flourish_app.extensions import db
-from flourish_app.models import Products
-
+from flask_login import UserMixin, LoginManager, login_required, login_user, logout_user, current_user
 from flask_cors import CORS
 from werkzeug import exceptions
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_bcrypt import Bcrypt
+
+from flourish_app.extensions import db
+from flourish_app.models import Products, Users, Category
+from flourish_app.AuthModels import RegisterForm, LoginForm
+
 
 main = Blueprint('main', __name__) 
-# same as Flask __name
-
 CORS(main)
+
+
+# bcrypt = Bcrypt(main)
+login_manager = LoginManager()
+login_manager.init_app(main)
+login_manager.login_view = "login" #our app and flask login to work together
 
 @main.route("/")
 def hello():
     return "Hello World!"
+
+@login_manager.user_loader #used to reload object from user id stored in session
+def load_user(user_id):
+    return Users.query.get(int(user_id))
+
+# @main.route("/login", methods = ['POST', "GET"])
+# def login():
+#     form = LoginForm()
+#     if form.validate_on_submit():
+#         user = Users.query.filter_by(username = form.username.data).first()
+#         if user:
+#             if bcrypt.check_password_hash(user.password, form.password.data):
+#                 login_user(user)
+                
+
+@main.route("/register", methods = ['POST', "GET"])
+def register():
+    form = RegisterForm()
+    req = request.get_json()
+    # if req.validate_on_submit():
+    hashed_password = generate_password_hash(req['passwrd'])
+    new_user =  Users(
+        username = req['username'], 
+        passwrd = hashed_password, 
+        email = req['email'],
+        rating = 0, 
+        rating_num = 0, 
+        location = 'ABCD', 
+        radius = 2
+    )
+    db.session.add(new_user)
+    db.session.commit()
+    return f"New user was added!", 201
+        
+
+@main.route('/logout', methods = ["GET", "POST"])
+@login_required
+def logout():
+    logout_user  
 
 
 @main.route('/products', methods=['GET','POST'])
@@ -28,7 +75,7 @@ def getAllProducts():
             raise exceptions.InternalServerError()
 
     elif request.method == 'POST':
-    # format of request { description, category_id, is_retail, location, price, expiry, image} 
+    # format of request 
     # { "user_id": 1, "description": "Tomatoes", "category_id": 2, "is_retail": "True", "location": "SE18", "price": 2.99, "expiry": "02/04/2022", "image": "LINK"}
         try:
             req = request.get_json()
