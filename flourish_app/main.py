@@ -5,7 +5,7 @@ from werkzeug import exceptions
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from flourish_app.extensions import db
-from flourish_app.models import Productratings, Products, Users, Category
+from flourish_app.models import Productratings, Products, Users
 
 
 main = Blueprint('main', __name__) 
@@ -159,11 +159,12 @@ def handleUserById(user_id):
         except:
             raise exceptions.InternalServerError()
 
-# needs to be fixed
+#working
 @main.route('/rating/vote', methods= ['POST'])
-def upvote():
+def vote():
+
     if request.method == 'POST':
-        # try:
+        try:
             req = request.get_json()
             new_product_rating = Productratings(
                 product_id = req['product_id'], 
@@ -174,48 +175,42 @@ def upvote():
             check_count = db.session.query(Productratings).filter(Productratings.user_id == req['user_id']).filter(Productratings.product_id == req['product_id']).count()
 
             check = db.session.query(Productratings).filter(Productratings.user_id == req['user_id']).filter(Productratings.product_id == req['product_id'])
-            
+
             if check_count == 0:
                 db.session.add(new_product_rating)
                 db.session.commit()
             else:
-                check.update({Users.rating: req['rating']})
+                check.update({Productratings.rating: req['rating']})
                 db.session.commit()
 
             #get the user that they are rating
             product_they_are_rating = Products.query.get_or_404(req['product_id']).serialize()
-            
+
             id_of_user_they_are_rating = product_they_are_rating['user_id']
 
             #calculate the rating
             #count of all productRatings that have the user id
             all_users_ratings = db.session.query(Productratings).filter(Productratings.user_id == id_of_user_they_are_rating)
-            
+
             all_users_ratings_array = []
             for row in all_users_ratings:
                 all_users_ratings_array.append(row.serialize())
 
             count = db.session.query(Productratings).filter(Productratings.user_id == id_of_user_they_are_rating).count()
-            print("count", count)
             #for the total of these productRatings add up all the rating keys / count * 100
 
-            def ratingCount():
-                rating_count = 0
-                for i in range(0, len(all_users_ratings_array)):
-                    rating_count = rating_count + all_users_ratings_array[i]['rating']
-                return rating_count
+            rating_count = 0
+            for i in range(0, len(all_users_ratings_array)):
+                rating_count = rating_count + all_users_ratings_array[i]['rating']
 
-
-            updated_rating = (ratingCount()/count)
-            print("updated_rating", updated_rating)
+            updated_rating = (rating_count/count)
 
             db.session.query(Users).filter(Users.id == id_of_user_they_are_rating).update({Users.rating: updated_rating})
             db.session.commit()
-            
             return f"Rating was posted!", 201
 
-        # except: 
-        #     raise exceptions.InternalServerError()
+        except: 
+            raise exceptions.InternalServerError()
     
 #working
 @main.route('/ratings',  methods=['GET'])
