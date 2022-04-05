@@ -16,8 +16,11 @@ flask-login = "*"
 flask-bcrypt = "*"
 flask-wtf = "*"
 wtforms = "*"
+pytest = "*"
 
 [dev-packages]
+pytest = "*"
+pytest-cov = "*"
 
 [requires]
 python_version = "3.9"
